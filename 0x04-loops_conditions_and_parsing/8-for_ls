@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# This script displays the names of files in the current directory after the first dash
+
+for file in *-*; do
+    # Check if the file exists to avoid errors
+    if [ -e "$file" ]; then
+        # Use parameter expansion to extract the part after the first dash
+        echo "${file#*-}"
+    fi
+done
+
