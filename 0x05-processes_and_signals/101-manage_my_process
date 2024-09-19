@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+PID_FILE="/var/run/my_process.pid"
+
+start() {
+    if [ -f "$PID_FILE" ]; then
+        echo "manage_my_process is already running."
+        return
+    fi
+
+    # Start the process in the background
+    /path/to/manage_my_process &
+    echo $! > "$PID_FILE"  # Save the PID
+    echo "manage_my_process started"
+}
+
+stop() {
+    if [ -f "$PID_FILE" ]; then
+        kill "$(cat "$PID_FILE")" && rm -f "$PID_FILE"
+        echo "manage_my_process stopped"
+    else
+        echo "manage_my_process is not running."
+    fi
+}
+
+restart() {
+    stop
+    start
+    echo "manage_my_process restarted"
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    *)
+        echo "Usage: manage_my_process {start|stop|restart}"
+        ;;
+esac
+
