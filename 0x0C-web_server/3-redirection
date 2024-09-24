@@ -1,35 +1,37 @@
 #!/usr/bin/env bash
-# This script configures Nginx to redirect /redirect_me to another page.
+# Installs Nginx and configures it for a 301 redirection
 
-# Update the package list and install Nginx if not already installed
-apt-get update -y
+# Update package lists
+apt-get update
+
+# Install Nginx
 apt-get install -y nginx
 
-# Create the HTML page to serve
+# Create a simple HTML file for the root page
 echo "Hello World!" > /var/www/html/index.html
 
-# Configure Nginx to handle the redirection
-cat <<EOL > /etc/nginx/sites-available/default
+# Configure Nginx to handle redirection
+cat > /etc/nginx/sites-available/default << EOL
 server {
-    listen      80 default_server;
-    listen      [::]:80 default_server;
-    root        /var/www/html;
-    index       index.html index.htm;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html;
 
     location / {
         try_files \$uri \$uri/ =404;
     }
 
-    # Redirect /redirect_me to a new URL
     location /redirect_me {
         return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
     }
 }
 EOL
 
-# Check Nginx configuration for errors
+# Test the Nginx configuration for syntax errors
 nginx -t
 
-# Restart Nginx without using systemctl
+# Restart Nginx to apply the changes
 service nginx restart
 

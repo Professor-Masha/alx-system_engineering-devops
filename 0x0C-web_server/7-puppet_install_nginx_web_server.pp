@@ -1,31 +1,21 @@
-class { 'nginx':
-  manage_repo => true,
-}
+# Setup nginx server
 
 package { 'nginx':
-  ensure => installed,
-}
-
-service { 'nginx':
-  ensure => running,
-  enable => true,
+  ensure     => 'installed',
 }
 
 file { '/var/www/html/index.html':
-  ensure  => file,
   content => 'Hello World!',
 }
 
-file { '/etc/nginx/sites-available/default':
-  ensure  => file,
-  content => template('nginx/default.erb'),
-  notify  => Service['nginx'],  # Notify service to restart if this changes
+file_line { 'aaaaa':
+  ensure => 'present',
+  path   => '/etc/nginx/sites-available/default',
+  after  => 'listen 80 default_server;',
+  line   => 'rewrite ^/redirect_me https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;',
 }
 
-# Ensure the default site is enabled
-exec { 'enable_default_site':
-  command => '/usr/sbin/nginx -s reload',
-  refreshonly => true,
-  subscribe => File['/etc/nginx/sites-available/default'],
+service { 'nginx':
+  ensure  => running,
+  require => Package['nginx'],
 }
-

@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
-# This script installs Nginx and configures it to serve "Hello World!" at the root.
+# Installs Nginx and configures it to return "Hello World!" at the root
 
-# Update the package list and install Nginx
-apt-get update -y
+# Update package lists
+apt-get update
+
+# Install Nginx
 apt-get install -y nginx
 
-# Create a simple HTML page to serve
+# Create a simple HTML file with the required content
 echo "Hello World!" > /var/www/html/index.html
 
-# Configure Nginx to listen on port 80
-cat <<EOL > /etc/nginx/sites-available/default
+# Configure Nginx to use the custom HTML page
+cat > /etc/nginx/sites-available/default << EOL
 server {
-    listen      80 default_server;
-    listen      [::]:80 default_server;
-    root        /var/www/html;
-    index       index.html index.htm;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html;
 
     location / {
         try_files \$uri \$uri/ =404;
@@ -22,9 +25,9 @@ server {
 }
 EOL
 
-# Check Nginx configuration for errors
+# Test the Nginx configuration for syntax errors
 nginx -t
 
-# Restart Nginx without using systemctl
+# Restart Nginx to apply the changes
 service nginx restart
 
