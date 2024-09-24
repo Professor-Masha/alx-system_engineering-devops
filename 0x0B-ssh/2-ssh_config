@@ -1,0 +1,6 @@
+Host server01
+    HostName 54.82.0.120     # Replace with your server's IP
+    User ubuntu              # The user to connect as
+    IdentityFile ~/.ssh/school # Use the private key located at ~/.ssh/school
+    PasswordAuthentication no  # Refuse password authentication
+
