@@ -1,10 +1,10 @@
-# Create a file in /tmp
+# This Puppet manifest creates a file at /tmp/school with specific permissions, owner, group, and content
 
-file { 'holberton':
-  ensure  => 'present',
+file { '/tmp/school':
+  ensure  => 'file',
   content => 'I love Puppet',
-  group   => 'www-data',
   mode    => '0744',
   owner   => 'www-data',
-  path    => '/tmp/holberton',
+  group   => 'www-data',
 }
+
