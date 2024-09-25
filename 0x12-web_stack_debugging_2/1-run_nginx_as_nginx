@@ -1,55 +1,7 @@
 #!/usr/bin/env bash
-# This script configures Nginx to run as the nginx user on port 8080
-
-# Check if Nginx is installed
-if ! command -v nginx &> /dev/null; then
-    echo "Nginx is not installed."
-    exit 1
-fi
-
-# Check if the configuration files exist
-NGINX_CONF="/etc/nginx/nginx.conf"
-NGINX_DEFAULT="/etc/nginx/sites-available/default"
-
-if [[ ! -f "$NGINX_CONF" ]]; then
-    echo "Nginx configuration file not found: $NGINX_CONF"
-    exit 1
-fi
-
-if [[ ! -f "$NGINX_DEFAULT" ]]; then
-    echo "Default server block file not found: $NGINX_DEFAULT"
-    exit 1
-fi
-
-# Update the Nginx configuration to run as the nginx user
-sed -i 's/user  www-data;/user  nginx;/' "$NGINX_CONF"
-
-# Update the server block to listen on port 8080
-sed -i 's/listen 80;/listen 8080;/' "$NGINX_DEFAULT"
-
-# Remove the default server block configuration if it exists
-if [[ -f "/etc/nginx/sites-enabled/default" ]]; then
-    rm /etc/nginx/sites-enabled/default
-fi
-
-# Create a new server block configuration for port 8080
-cat <<EOF > "$NGINX_DEFAULT"
-server {
-    listen 8080;
-    server_name _;
-
-    location / {
-        root /var/www/html;
-        index index.html index.htm;
-    }
-}
-EOF
-
-# Enable the new configuration by linking it
-if [[ ! -d "/etc/nginx/sites-enabled/" ]]; then
-    mkdir -p /etc/nginx/sites-enabled/
-fi
-ln -s "$NGINX_DEFAULT" /etc/nginx/sites-enabled/
-
-# Restart Nginx to apply the changes
-service nginx restart
+# Fixes a web server to run Nginx as the nginx user listening on port 8080.
+sed -i "s/#user www-data/user nginx/" /etc/nginx/nginx.conf
+sed -i "s/80/8080/g" /etc/nginx/sites-available/default
+chmod 644 /etc/nginx/nginx.conf
+pkill apache2
+sudo -u nginx service nginx start
