@@ -1,55 +1,41 @@
 #!/usr/bin/python3
-
-"""
-Script to gather employee TODO list progress from a REST API and export
-to CSV format.
-"""
+"""Script to export employee TODO list data to CSV format."""
 
 import csv
-import sys
 import requests
+import sys
 
+def export_to_csv(employee_id):
+    """Fetch employee TODO list data and export to CSV."""
+    # API URLs
+    user_url = f'https://jsonplaceholder.typicode.com/users/{employee_id}'
+    todos_url = f'https://jsonplaceholder.typicode.com/todos?userId={employee_id}'
 
-def export_todo_to_csv(employee_id):
-    """Fetch and export TODO data for a given employee ID to CSV."""
-    # API endpoint for users and todos
-    user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
-    todos_url = f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
-
-    # Fetch user information
+    # Fetch user data
     user_response = requests.get(user_url)
     user_data = user_response.json()
+    username = user_data.get('username', 'Unknown User')
 
-    # Fetch TODOs for the user
+    # Fetch TODO data
     todos_response = requests.get(todos_url)
     todos_data = todos_response.json()
 
-    # Get the employee username
-    username = user_data.get('username', 'Unknown User')
+    # Prepare CSV file name
+    csv_file = f'{employee_id}.csv'
 
-    # Prepare CSV filename
-    csv_filename = f"{employee_id}.csv"
-
-    # Write to CSV file
-    with open(csv_filename, mode='w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-        for todo in todos_data:
-            csv_writer.writerow([
-                employee_id,
-                username,
-                todo['completed'],
-                todo['title']
-            ])
-
-    print(f"Exported data to {csv_filename}")
-
+    # Write data to CSV file
+    with open(csv_file, mode='w', newline='') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_ALL)
+        for task in todos_data:
+            writer.writerow([employee_id, username, task.get('completed'), task.get('title')])
 
 if __name__ == "__main__":
-    # Check if the user provided an employee ID as an argument
-    if len(sys.argv) != 2 or not sys.argv[1].isdigit():
+    if len(sys.argv) != 2:
         print("Usage: python3 1-export_to_CSV.py <employee_id>")
         sys.exit(1)
 
-    # Get employee ID from command line argument
-    emp_id = int(sys.argv[1])
-    export_todo_to_csv(emp_id)
+    try:
+        emp_id = int(sys.argv[1])
+        export_to_csv(emp_id)
+    except ValueError:
+        print("Employee ID must be an integer.")
