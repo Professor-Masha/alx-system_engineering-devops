@@ -26,12 +26,14 @@ def recurse(subreddit, hot_list=None, after=None):
     headers = {'User-Agent': 'Mozilla/5.0'}
     params = {'after': after}
 
-    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
+    response = requests.get(
+            url, headers=headers, params=params, allow_redirects=False)
 
     if response.status_code == 200:
         data = response.json().get('data', {})
         if 'children' in data:
-            hot_list.extend([post['data']['title'] for post in data['children']])
+            hot_list.extend(
+                    [post['data']['title'] for post in data['children']])
             after = data.get('after')
             if after:
                 return recurse(subreddit, hot_list, after)  # Recursive call
