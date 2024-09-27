@@ -1,46 +1,58 @@
 #!/usr/bin/python3
-"""Function to count keywords in posts of a given Reddit subreddit."""
+"""
+Module for count_words fun
+"""
 import requests
 
 
-def count_words(subreddit, word_list):
-    """Count occurrences of keywords in subreddit posts."""
-    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
-    headers = {
-        "User-Agent": "linux:0x16.api.advanced:v1.0.0 (by /u/bdov_)"
-    }
-    response = requests.get(url, headers=headers, allow_redirects=False)
+def count_words(subreddit, word_list, new_after='',
+                words_dict={}):
+    """
+    A recursive fun that queries the Reddit API,
+    parses the title of all hot articles, and prints a
+    sorted count of given keywords
+    """
 
-    if response.status_code == 404:
-        print("OK")  # Invalid subreddit
-        return
+    word_list = map(lambda x: x.lower(), word_list)
+    word_list = list(word_list)
 
-    if response.status_code != 200:
-        print("OK")  # Handle other errors
+    res = requests.get("https://www.reddit.com/r/{}/hot.json"
+                       .format(subreddit),
+                       headers={'User-Agent': 'Custom'},
+                       params={'after': new_after},
+                       allow_redirects=False)
+
+    if res.status_code != 200:
         return
 
     try:
-        posts = response.json().get("data").get("children", [])
-        keyword_count = {word.lower(): 0 for word in set(word_list)}  # Avoid duplicates
-        for post in posts:
-            title = post["data"]["title"]
-            for word in keyword_count.keys():
-                keyword_count[word] += title.lower().split().count(word)
+        response = res.json().get('data', None)
 
-        # Output counts
-        for word, count in keyword_count.items():
-            if count > 0:
-                print(f"{word}: {count}")
+        if response is None:
+            return
     except ValueError:
-        print("OK")  # Handle JSON decode errors
+        return
 
+    children = response.get('children', [])
 
-# Example usage
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 3:
-        print("Usage: {} <subreddit> <keyword1> <keyword2> ...".format(sys.argv[0]))
-    else:
-        subreddit = sys.argv[1]
-        keywords = sys.argv[2:]
-        count_words(subreddit, keywords)
+    for post in children:
+        title = post.get('data', {}).get('title', '')
+        for key_word in word_list:
+            for word in title.lower().split():
+                if key_word == word:
+                    words_dict[key_word] = words_dict.get(key_word, 0) + 1
+
+    new_after = response.get('after', None)
+
+    if new_after is None:
+        sorted_dict = sorted(words_dict.items(),
+                             key=lambda x: x[1],
+                             reverse=True)
+
+        for i in sorted_dict:
+            if i[1] != 0:
+                print("{}: {}".format(i[0], i[1]))
+        return
+
+    return count_words(subreddit, word_list,
+                       new_after, words_dict)
